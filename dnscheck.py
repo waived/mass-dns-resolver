@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import dns.resolver, sys
+import dns.resolver, sys, os
 from urllib.parse import urlparse
+from tabulate import tabulate
 
 # set colors
 b = '\033[1m'  #bright
@@ -43,50 +44,75 @@ dns_servers = {
     "[BD] SS Online ": "103.80.1.2"
 }
 
-#generic banner
-print('\r\n' * 20 + f'''{b}{c}
-     _____ _____ _____ _____   ____  _____ _____    
-    |     |  _  |   __|   __| |    \|   | |   __|   
-    | | | |     |__   |__   | |  |  | | | |__   |   
-   _|_|_|_|__|__|_____|_____| |____/|_|___|_____|_
-  | __  |   __|   __|     |  |  |  |  |   __| __  |
-  |    -|   __|__   |  |  |  |__|  |  |   __|    -|
-  |__|__|_____|_____|_____|_____|\___/|_____|__|__|
+# generic banner
+os.system('clear')
+
+print(f'''{b}{c}
+                                     _____ _____ _____ _____   ____  _____ _____    
+                                    |     |  _  |   __|   __| |    \|   | |   __|   
+                                    | | | |     |__   |__   | |  |  | | | |__   |   
+                                   _|_|_|_|__|__|_____|_____| |____/|_|___|_____|_
+                                  | __  |   __|   __|     |  |  |  |  |   __| __  |
+                                  |    -|   __|__   |  |  |  |__|  |  |   __|    -|
+                                  |__|__|_____|_____|_____|_____|\___/|_____|__|__|
 ''')
 
 try:
-    #capture website
-    host = input(f'{w}Website:{y} ')
-    
-    #format host
+    # Capture website
+    host = input(f'{w}Enter Website URL (e.g. example.com):{y} ')
+
+    # Format host
     host = host.lower()
-    
+
     if not (host.startswith('http://') or host.startswith('https://')):
         host = f'http://{host}'
-    
-    #get domain name
+
+    # Get domain name
     try:
         domain = urlparse(host).netloc
-    except:    
+    except:
         sys.exit(f'\r\n{r}Error! Invalid domain/URL.\r\n')
-    
-    #confirm scan
+
+    # Confirm scan
     input(f'\r\n{w}Ready? Strike <ENTER> to resolve...\r\n')
-    
+
+    # Prepare data for the table
+    table_data = []
+
     for server, ip in dns_servers.items():
         try:
             resolver = dns.resolver.Resolver()
             resolver.nameservers = [ip]
-            
+
+            # Resolve the domain
             answer = resolver.resolve(domain, 'A')
-            
-            for rdata in answer:
-                ip_addresses = [rdata.to_text() for rdata in answer]
-            
-            print(f'{y}{server}DNS {w}@ {y}{ip}:53 {w}resolved host to: {g}{", ".join(ip_addresses)}')
-        except:
-            print(f'{y}{server}DNS {w}@ {y}{ip}:53 {r}unable to resolve host!')
-        
+
+            # Collect all IP addresses
+            ip_addresses = [rdata.to_text() for rdata in answer]
+            ip_addresses_str = ", ".join(ip_addresses)
+
+            # Add to table data with colors applied
+            table_data.append([
+                f'{y}{server.ljust(30)}{w}',  # DNS Server in yellow (left-aligned)
+                f'{y}{ip.ljust(15)}{w}',      # IP Address in yellow (left-aligned)
+                f'{g}Resolved{w}',             # Status in green if resolved
+                f'{g}{ip_addresses_str.ljust(40)}{w}'  # Resolved IPs in green (left-aligned)
+            ])
+
+        except Exception as e:
+            # Add error data to table
+            table_data.append([
+                f'{y}{server.ljust(30)}{w}',  # DNS Server in yellow (left-aligned)
+                f'{y}{ip.ljust(15)}{w}',      # IP Address in yellow (left-aligned)
+                f'{r}Unable to Resolve{w}',   # Status in red if unable to resolve
+                f'{r}{str(e).ljust(40)}{w}'   # Error message in red (left-aligned)
+            ])
+
+    # Print the results as a table with left-alignment and color formatting
+    headers = [f'{y}DNS Server{w}', f'{y}IP Address{w}', f'{g}Status{w}', f'{g}Resolved IPs/Error{w}']
+
+    print(tabulate(table_data, headers=headers, tablefmt="pretty", stralign="left"))
+
 except KeyboardInterrupt:
     sys.exit(f'{w}\r\nAborted.\r\n')
 
