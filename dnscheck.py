@@ -90,4 +90,4 @@ try:
 except KeyboardInterrupt:
     sys.exit(f'{w}\r\nAborted.\r\n')
 
-sys.exit('f\r\n{w}Complete.\r\n')
+sys.exit(f'\r\n{w}Complete.\r\n')
