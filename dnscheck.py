@@ -58,25 +58,24 @@ print(f'''{b}{c}
 ''')
 
 try:
-    # Capture website
     host = input(f'{w}Enter Website URL (e.g. example.com):{y} ')
 
-    # Format host
+    # format host
     host = host.lower()
 
     if not (host.startswith('http://') or host.startswith('https://')):
         host = f'http://{host}'
 
-    # Get domain name
+    # get domain name
     try:
         domain = urlparse(host).netloc
     except:
         sys.exit(f'\r\n{r}Error! Invalid domain/URL.\r\n')
 
-    # Confirm scan
+    # confirm scan
     input(f'\r\n{w}Ready? Strike <ENTER> to resolve...\r\n')
 
-    # Prepare data for the table
+    # prepare data for the table
     table_data = []
 
     for server, ip in dns_servers.items():
@@ -84,31 +83,31 @@ try:
             resolver = dns.resolver.Resolver()
             resolver.nameservers = [ip]
 
-            # Resolve the domain
+            # resolve the domain
             answer = resolver.resolve(domain, 'A')
 
-            # Collect all IP addresses
+            # collect all ips
             ip_addresses = [rdata.to_text() for rdata in answer]
             ip_addresses_str = ", ".join(ip_addresses)
 
-            # Add to table data with colors applied
+            # add to table data with colors applied
             table_data.append([
-                f'{y}{server.ljust(30)}{w}',  # DNS Server in yellow (left-aligned)
-                f'{y}{ip.ljust(15)}{w}',      # IP Address in yellow (left-aligned)
-                f'{g}Resolved{w}',             # Status in green if resolved
-                f'{g}{ip_addresses_str.ljust(40)}{w}'  # Resolved IPs in green (left-aligned)
+                f'{y}{server.ljust(30)}{w}', 
+                f'{y}{ip.ljust(15)}{w}',     
+                f'{g}Resolved{w}',             
+                f'{g}{ip_addresses_str.ljust(40)}{w}' 
             ])
 
         except Exception as e:
-            # Add error data to table
+            # add error data to table
             table_data.append([
-                f'{y}{server.ljust(30)}{w}',  # DNS Server in yellow (left-aligned)
-                f'{y}{ip.ljust(15)}{w}',      # IP Address in yellow (left-aligned)
-                f'{r}Unable to Resolve{w}',   # Status in red if unable to resolve
-                f'{r}{str(e).ljust(40)}{w}'   # Error message in red (left-aligned)
+                f'{y}{server.ljust(30)}{w}',
+                f'{y}{ip.ljust(15)}{w}',
+                f'{r}Unable to Resolve{w}',
+                f'{r}{str(e).ljust(40)}{w}'
             ])
 
-    # Print the results as a table with left-alignment and color formatting
+    # print the results as a table with left-alignment and color formatting
     headers = [f'{y}DNS Server{w}', f'{y}IP Address{w}', f'{g}Status{w}', f'{g}Resolved IPs/Error{w}']
 
     print(tabulate(table_data, headers=headers, tablefmt="pretty", stralign="left"))
